@@ -22,7 +22,7 @@ public class Program
         serviceProvider = CreateProvider();
     }
 
-    static void Main()
+    private static void Main()
     {
         try
         {
@@ -43,7 +43,7 @@ public class Program
         }
     }
 
-    static IServiceProvider CreateProvider()
+    private static IServiceProvider CreateProvider()
     {
         var collection = new ServiceCollection()
             .AddSingleton(new LoggerFactory())
@@ -64,17 +64,13 @@ public class Program
                 ResumeKey = "Rhea"
             })
             .AddSingleton<IArtworkService, ArtworkService>()
-            .AddSingleton(new InactivityTrackingOptions {
-                DisconnectDelay = TimeSpan.FromSeconds(10),
-                PollInterval = TimeSpan.FromSeconds(4),
-                TrackInactivity = true
-            })
+            .AddSingleton<InactivityTrackingOptions>()
             .AddSingleton<InactivityTrackingService>();
 
         return collection.BuildServiceProvider();
     }
 
-    async Task RunAsync()
+    private async Task RunAsync()
     {
         var client = serviceProvider.GetRequiredService<DiscordSocketClient>();
         var handler = serviceProvider.GetRequiredService<InteractionService>();
@@ -89,6 +85,8 @@ public class Program
         {
             await lavalink.InitializeAsync();
             Log.Information("[Lavalink] Connected");
+            serviceProvider.GetRequiredService<InactivityTrackingService>()
+                .BeginTracking();
             if (IsDebug())
                 await handler.RegisterCommandsToGuildAsync(ulong.Parse(Environment.GetEnvironmentVariable("DEV_GUILD")!));
             else
@@ -111,7 +109,6 @@ public class Program
         };
 
         handler.SlashCommandExecuted += SlashCommandExecuted;
-
 
         await client.LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("TOKEN"));
         await client.StartAsync();

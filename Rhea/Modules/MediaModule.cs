@@ -10,8 +10,8 @@ namespace Rhea.Modules;
 
 public class MediaModule : BaseModule
 {
-    private readonly IAudioService lavalink;
     private readonly IArtworkService artwork;
+    private readonly IAudioService lavalink;
 
     public MediaModule(IAudioService lavalink, IArtworkService artwork) : base(lavalink)
     {
@@ -65,7 +65,7 @@ public class MediaModule : BaseModule
                 .WithColor(Color.Blue)
                 .WithFooter($"{Context.User.Username}#{Context.User.Discriminator}", Context.User.GetAvatarUrl()).Build();
 
-            if (player.State is not PlayerState.Playing or PlayerState.Paused && player.Queue.TryDequeue(out var track)) await player.PlayAsync(track!, enqueue: false);
+            if (player.State is not PlayerState.Playing or PlayerState.Paused && player.Queue.TryDequeue(out var track)) await player.PlayAsync(track!, false);
 
             await ModifyOriginalResponseAsync(properties => properties.Embed = embed);
         }

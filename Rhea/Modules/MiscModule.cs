@@ -23,7 +23,7 @@ public class MiscModule : InteractionModuleBase<SocketInteractionContext>
 
         await RespondAsync(embed: embed);
     }
-    
+
     [SlashCommand("invite", "Invite the bot")]
     public async Task InviteCommand()
         => await RespondAsync(
