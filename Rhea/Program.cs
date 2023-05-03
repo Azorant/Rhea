@@ -110,6 +110,43 @@ public class Program
 
         handler.SlashCommandExecuted += SlashCommandExecuted;
 
+        client.JoinedGuild += async guild =>
+        {
+            if (!ulong.TryParse(Environment.GetEnvironmentVariable("GUILD_CHANNEL"), out var channelID)) return;
+
+            if (client.GetChannel(channelID) is not SocketTextChannel channel || channel.GetChannelType() != ChannelType.Text) return;
+
+            var user = await client.GetUserAsync(guild.OwnerId);
+            var owner = user == null
+                ? $"**Owner ID:** {guild.OwnerId}"
+                : $"**Owner:** {user.Username}#{user.Discriminator}\n**Owner ID:** {user.Id}";
+
+            await channel.SendMessageAsync(embed: new EmbedBuilder()
+                .WithTitle("Joined guild")
+                .WithDescription($"**Name:** {guild.Name}\n**ID:** {guild.Id}\n{owner}\n**Members:** {guild.MemberCount}\n**Created:** {guild.CreatedAt:f}")
+                .WithColor(Color.Green)
+                .WithCurrentTimestamp()
+                .WithThumbnailUrl(guild.IconUrl).Build());
+        };
+        client.LeftGuild += async guild =>
+        {
+            if (!ulong.TryParse(Environment.GetEnvironmentVariable("GUILD_CHANNEL"), out var channelID)) return;
+
+            if (client.GetChannel(channelID) is not SocketTextChannel channel || channel.GetChannelType() != ChannelType.Text) return;
+
+            var user = await client.GetUserAsync(guild.OwnerId);
+            var owner = user == null
+                ? $"**Owner ID:** {guild.OwnerId}"
+                : $"**Owner:** {user.Username}#{user.Discriminator}\n**Owner ID:** {user.Id}";
+            
+            await channel.SendMessageAsync(embed: new EmbedBuilder()
+                .WithTitle("Left guild")
+                .WithDescription($"**Name:** {guild.Name}\n**ID:** {guild.Id}\n{owner}\n**Members:** {guild.MemberCount}\n**Created:** {guild.CreatedAt:f}")
+                .WithColor(Color.Red)
+                .WithCurrentTimestamp()
+                .WithThumbnailUrl(guild.IconUrl).Build());
+        };
+
         await client.LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("TOKEN"));
         await client.StartAsync();
 
