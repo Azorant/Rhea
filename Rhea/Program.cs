@@ -61,7 +61,7 @@ public class Program
                 RestUri = $"http://{Environment.GetEnvironmentVariable("LAVALINK_HOST")}/",
                 WebSocketUri = $"ws://{Environment.GetEnvironmentVariable("LAVALINK_HOST")}/",
                 Password = Environment.GetEnvironmentVariable("LAVALINK_AUTH")!,
-                ResumeKey = "Rhea"
+                ResumeKey = Environment.GetEnvironmentVariable("LAVALINK_KEY") ?? "Rhea"
             })
             .AddSingleton<IArtworkService, ArtworkService>()
             .AddSingleton<InactivityTrackingOptions>()
