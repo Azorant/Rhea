@@ -1,6 +1,8 @@
 ﻿using Discord.Interactions;
 using Lavalink4NET;
-using Lavalink4NET.Player;
+using Lavalink4NET.Players;
+using Lavalink4NET.Players.Queued;
+using Lavalink4NET.Players.Vote;
 
 namespace Rhea.Modules;
 
@@ -18,9 +20,9 @@ public class ControlsModule : BaseModule
             return;
         }
 
-        var player = await GetPlayer(Context.Guild.Id, member.VoiceChannel.Id);
+        var player = await GetPlayer();
 
-        if (player.VoiceChannelId != member.VoiceChannel.Id)
+        if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
             await RespondAsync("You must be in the same voice channel as me to run this command.", ephemeral: true);
             return;
@@ -52,9 +54,9 @@ public class ControlsModule : BaseModule
             return;
         }
 
-        var player = await GetPlayer(Context.Guild.Id, member.VoiceChannel.Id);
+        var player = await GetPlayer();
 
-        if (player.VoiceChannelId != member.VoiceChannel.Id)
+        if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
             await RespondAsync("You must be in the same voice channel as me to run this command.", ephemeral: true);
             return;
@@ -86,9 +88,9 @@ public class ControlsModule : BaseModule
             return;
         }
 
-        var player = await GetPlayer(Context.Guild.Id, member.VoiceChannel.Id);
+        var player = await GetPlayer();
 
-        if (player.VoiceChannelId != member.VoiceChannel.Id)
+        if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
             await RespondAsync("You must be in the same voice channel as me to run this command.", ephemeral: true);
             return;
@@ -100,7 +102,7 @@ public class ControlsModule : BaseModule
             return;
         }
 
-        await player.StopAsync(true);
+        await player.StopAsync();
         await RespondAsync("🛑 **Stopped and cleared queue**");
     }
 
@@ -114,9 +116,9 @@ public class ControlsModule : BaseModule
             return;
         }
 
-        var player = await GetPlayer(Context.Guild.Id, member.VoiceChannel.Id);
+        var player = await GetPlayer();
 
-        if (player.VoiceChannelId != member.VoiceChannel.Id)
+        if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
             await RespondAsync("You must be in the same voice channel as me to run this command.", ephemeral: true);
             return;
@@ -124,14 +126,15 @@ public class ControlsModule : BaseModule
 
         if (!IsPrivileged(member))
         {
-            var result = await player.VoteAsync(member.Id, 0.66f);
-            if (result.WasSkipped)
+            var result = await player.VoteAsync(member.Id, new UserVoteOptions(0.66f));
+            if (result == UserVoteResult.Skipped)
             {
                 await RespondAsync(":fast_forward: **Skipped** :thumbsup:");
             }
             else
             {
-                var threshold = result.TotalUsers * result.Percentage;
+                var votes = await player.GetVotesAsync();
+                var threshold = votes.TotalUsers * votes.Percentage;
                 await RespondAsync($"**Need {Math.Ceiling(threshold)} more votes to skip**");
             }
         }
@@ -152,15 +155,15 @@ public class ControlsModule : BaseModule
             return;
         }
 
-        var player = await GetPlayer(Context.Guild.Id, member.VoiceChannel.Id);
+        var player = await GetPlayer();
 
-        if (player.VoiceChannelId != member.VoiceChannel.Id)
+        if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
             await RespondAsync("You must be in the same voice channel as me to run this command.", ephemeral: true);
             return;
         }
 
-        player.Queue.Shuffle();
+        await player.Queue.ShuffleAsync();
         await RespondAsync("🔀 **Queue shuffled**");
     }
 
@@ -174,9 +177,9 @@ public class ControlsModule : BaseModule
             return;
         }
 
-        var player = await GetPlayer(Context.Guild.Id, member.VoiceChannel.Id);
+        var player = await GetPlayer();
 
-        if (player.VoiceChannelId != member.VoiceChannel.Id)
+        if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
             await RespondAsync("You must be in the same voice channel as me to run this command.", ephemeral: true);
             return;
@@ -206,15 +209,15 @@ public class ControlsModule : BaseModule
         }
 
         var ts = TimeSpan.Parse(string.Join(':', parsedTimestamp));
-
-        await player.SeekPositionAsync(ts);
+        
+        await player.SeekAsync(ts);
         await RespondAsync($"**Seeked to** `{FormatTime(ts)}`");
     }
-
+    
+    // TODO: Investigate why queue loop isn't working as intended
     [SlashCommand("loop", "Set whether or not the queue should loop")]
     public async Task LoopCommand(
-        [Summary(description: "Loop mode"), Choice("Disable", (int)PlayerLoopMode.None), Choice("Track", (int)PlayerLoopMode.Track),
-         Choice("Queue", (int)PlayerLoopMode.Queue)]
+        [Summary(description: "Loop mode"), Choice("Disable", (int)TrackRepeatMode.None), Choice("Track", (int)TrackRepeatMode.Track)]
         int mode)
     {
         var member = Context.Guild.GetUser(Context.User.Id);
@@ -224,24 +227,24 @@ public class ControlsModule : BaseModule
             return;
         }
 
-        var player = await GetPlayer(Context.Guild.Id, member.VoiceChannel.Id);
+        var player = await GetPlayer();
 
-        if (player.VoiceChannelId != member.VoiceChannel.Id)
+        if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
             await RespondAsync("You must be in the same voice channel as me to run this command.", ephemeral: true);
             return;
         }
 
-        player.LoopMode = (PlayerLoopMode)mode;
-        switch ((PlayerLoopMode)mode)
+        player.RepeatMode = (TrackRepeatMode)mode;
+        switch ((TrackRepeatMode)mode)
         {
-            case PlayerLoopMode.None:
+            case TrackRepeatMode.None:
                 await RespondAsync("🔂 **Loop disabled**");
                 break;
-            case PlayerLoopMode.Track:
+            case TrackRepeatMode.Track:
                 await RespondAsync("🔂 **Loop track**");
                 break;
-            case PlayerLoopMode.Queue:
+            case TrackRepeatMode.Queue:
                 await RespondAsync("🔂 **Loop queue**");
                 break;
         }
