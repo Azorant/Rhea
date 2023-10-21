@@ -31,7 +31,7 @@ services:
       - TOKEN=bot token
       - GUILD_CHANNEL=channel ID for guild events
   lavalink:
-    image: ghcr.io/lavalink-devs/lavalink:4.0.0-beta.3-alpine
+    image: ghcr.io/lavalink-devs/lavalink:4.0.0-beta.4-alpine
     container_name: lavalink
     restart: unless-stopped
     environment:
