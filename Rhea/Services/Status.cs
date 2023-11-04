@@ -45,7 +45,7 @@ public class Status : IHostedService, IDisposable
                 break;
         }
 
-        client.SetActivityAsync(new Game(status)).ConfigureAwait(false);
+        client.SetCustomStatusAsync(status).ConfigureAwait(false);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
