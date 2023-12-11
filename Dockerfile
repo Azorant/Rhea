@@ -1,9 +1,9 @@
-﻿FROM mcr.microsoft.com/dotnet/runtime:7.0-alpine AS base
+﻿FROM mcr.microsoft.com/dotnet/runtime:8.0-alpine AS base
 WORKDIR /app
 RUN apk add --no-cache icu-libs
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
 COPY ["Rhea/Rhea.csproj", "Rhea/"]
 RUN dotnet restore "Rhea/Rhea.csproj"
