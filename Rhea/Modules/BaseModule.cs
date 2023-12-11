@@ -1,24 +1,18 @@
-﻿using Discord;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using Discord.WebSocket;
 using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Vote;
 using Rhea.Models;
+using Rhea.Services;
 
 namespace Rhea.Modules;
 
-public class BaseModule : InteractionModuleBase<SocketInteractionContext>
+public class BaseModule(IAudioService lavalink, RedisService redis) : InteractionModuleBase<SocketInteractionContext>
 {
-    private readonly IAudioService lavalink;
-
-    protected BaseModule(IAudioService lavalink)
-    {
-        this.lavalink = lavalink;
-    }
-
-    protected async ValueTask<VoteLavalinkPlayer?> GetPlayer(PlayerChannelBehavior joinBehavior = PlayerChannelBehavior.Join)
+    protected async ValueTask<VoteLavalinkPlayer?> GetPlayer(
+        PlayerChannelBehavior joinBehavior = PlayerChannelBehavior.Join)
     {
         var member = Context.Guild.GetUser(Context.User.Id);
         var permissions = Context.Guild.CurrentUser.GetPermissions(member.VoiceChannel);
@@ -26,9 +20,14 @@ public class BaseModule : InteractionModuleBase<SocketInteractionContext>
         {
             throw new Exception($"Unable to connect to {member.VoiceChannel.Mention}");
         }
-        
-        var result = await lavalink.Players.RetrieveAsync(Context, playerFactory: PlayerFactory.Vote, new PlayerRetrieveOptions(joinBehavior));
-        if (!result.IsSuccess && result.Status != PlayerRetrieveStatus.BotNotConnected) throw new Exception($"Unable to retrieve player: {result.Status}");
+
+        var result = await lavalink.Players.RetrieveAsync(Context, PlayerFactory.Vote, new VoteLavalinkPlayerOptions
+            {
+                TrackQueue = new TrackQueue(redis, Context.Guild.Id)
+            },
+            new PlayerRetrieveOptions(joinBehavior));
+        if (!result.IsSuccess && result.Status != PlayerRetrieveStatus.BotNotConnected)
+            throw new Exception($"Unable to retrieve player: {result.Status}");
         return result.Player;
     }
 
@@ -36,6 +35,7 @@ public class BaseModule : InteractionModuleBase<SocketInteractionContext>
         => time.ToString(@"hh\:mm\:ss").TrimStart('0', ':');
 
     protected bool IsPrivileged(SocketGuildUser Member)
-        => Member.GetPermissions(Member.VoiceChannel).MoveMembers || Member.Roles.FirstOrDefault(role => role.Name.ToLower() == "dj") != null ||
+        => Member.GetPermissions(Member.VoiceChannel).MoveMembers ||
+           Member.Roles.FirstOrDefault(role => role.Name.ToLower() == "dj") != null ||
            !Member.VoiceChannel.ConnectedUsers.Any(user => !user.IsBot && user.Id != Member.Id);
 }

@@ -3,13 +3,12 @@ using Lavalink4NET;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Players.Vote;
+using Rhea.Services;
 
 namespace Rhea.Modules;
 
-public class ControlsModule : BaseModule
+public class ControlsModule(IAudioService lavalink, RedisService redis) : BaseModule(lavalink, redis)
 {
-    public ControlsModule(IAudioService lavalink) : base(lavalink) { }
-
     [SlashCommand("resume", "Resume playing")]
     public async Task ResumeCommand()
     {
@@ -209,11 +208,11 @@ public class ControlsModule : BaseModule
         }
 
         var ts = TimeSpan.Parse(string.Join(':', parsedTimestamp));
-        
+
         await player.SeekAsync(ts);
         await RespondAsync($"**Seeked to** `{FormatTime(ts)}`");
     }
-    
+
     // TODO: Investigate why queue loop isn't working as intended
     [SlashCommand("loop", "Set whether or not the queue should loop")]
     public async Task LoopCommand(

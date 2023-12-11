@@ -1,29 +1,34 @@
-﻿using Discord;
-using Discord.WebSocket;
+﻿using Discord.WebSocket;
 using Microsoft.Extensions.Hosting;
 
 namespace Rhea.Services;
 
-public class Status : IHostedService, IDisposable
+public class Status(DiscordSocketClient client) : IHostedService, IDisposable
 {
+    private int lastStatus;
     private Timer timer = null!;
-    private DiscordSocketClient client;
-    private int lastStatus = 0;
 
-    public Status(DiscordSocketClient client)
+    public void Dispose()
     {
-        this.client = client;
+        timer?.Dispose();
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        timer = new Timer(DoWork, null, TimeSpan.Zero,
+        timer = new Timer(SetStatus, null, TimeSpan.Zero,
             TimeSpan.FromSeconds(30));
 
         return Task.CompletedTask;
     }
 
-    private void DoWork(object state)
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        timer?.Change(Timeout.Infinite, 0);
+
+        return Task.CompletedTask;
+    }
+
+    private void SetStatus(object? state)
     {
         var status = "/help";
         switch (lastStatus)
@@ -46,17 +51,5 @@ public class Status : IHostedService, IDisposable
         }
 
         client.SetCustomStatusAsync(status).ConfigureAwait(false);
-    }
-
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        timer?.Change(Timeout.Infinite, 0);
-
-        return Task.CompletedTask;
-    }
-
-    public void Dispose()
-    {
-        timer?.Dispose();
     }
 }

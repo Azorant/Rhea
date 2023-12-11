@@ -1,6 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace Rhea.Models;
+﻿namespace Rhea.Models;
 
 public class SMPacket
 {

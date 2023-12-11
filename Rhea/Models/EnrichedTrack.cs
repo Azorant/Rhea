@@ -4,15 +4,9 @@ using Lavalink4NET.Tracks;
 
 namespace Rhea.Models;
 
-public class EnrichedTrack : ITrackQueueItem 
+public class EnrichedTrack(LavalinkTrack track, string requester) : ITrackQueueItem
 {
-    public TrackReference Reference { get; }
+    public string Requester { get; } = requester;
+    public TrackReference Reference { get; } = new TrackReference(track);
     public LavalinkTrack Track => Reference.Track!;
-    public string Requester { get; }
-
-    public EnrichedTrack(LavalinkTrack track, string requester)
-    {
-        Reference = new TrackReference(track);
-        Requester = requester;
-    }
 }

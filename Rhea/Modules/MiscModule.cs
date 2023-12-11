@@ -6,15 +6,8 @@ using Rhea.Services;
 
 namespace Rhea.Modules;
 
-public class MiscModule : InteractionModuleBase<SocketInteractionContext>
+public class MiscModule(IAudioService lavalink) : InteractionModuleBase<SocketInteractionContext>
 {
-    private readonly IAudioService lavalink;
-
-    public MiscModule(IAudioService lavalink)
-    {
-        this.lavalink = lavalink;
-    }
-    
     [SlashCommand("about", "Information about the bot")]
     public async Task AboutCommand()
     {

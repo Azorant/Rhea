@@ -1,7 +1,6 @@
 using Discord;
 using Discord.Interactions;
 using Lavalink4NET;
-using Lavalink4NET.Artwork;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Players.Vote;
@@ -12,19 +11,9 @@ using Serilog;
 
 namespace Rhea.Modules;
 
-public class MediaModule : BaseModule
+public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio, RedisService redis)
+    : BaseModule(lavalink, redis)
 {
-    private readonly IArtworkService artwork;
-    private readonly IAudioService lavalink;
-    private readonly SimulatorRadio simulatorRadio;
-
-    public MediaModule(IAudioService lavalink, IArtworkService artwork, SimulatorRadio simulatorRadio) : base(lavalink)
-    {
-        this.lavalink = lavalink;
-        this.artwork = artwork;
-        this.simulatorRadio = simulatorRadio;
-    }
-
     [SlashCommand("play", "Play some music")]
     public async Task Play([Summary(description: "A search term or url")] string search)
     {
@@ -45,60 +34,39 @@ public class MediaModule : BaseModule
 
         await DeferAsync();
 
-        // TODO: When new version of Lavalink4NET is out with fix go back to only using LoadTracksAsync
-        try
-        {
-            var searchResponse = await lavalink.Tracks.LoadTracksAsync(search, Uri.IsWellFormedUriString(search, UriKind.Absolute)
-                ? TrackSearchMode.None
-                : TrackSearchMode.YouTube);
-
-            if (searchResponse.IsFailed || !searchResponse.HasMatches)
-            {
-                await ModifyOriginalResponseAsync(properties => properties.Content = $"Unable to find anything for `{Format.Sanitize(search)}`");
-                return;
-            }
-
-            if (searchResponse.IsPlaylist)
-            {
-                await player.Queue.AddRangeAsync(searchResponse.Tracks.Select(lavalinkTrack => new EnrichedTrack(lavalinkTrack, DiscordClientHost.DisplayName(Context.User))).ToList());
-                var embed = new EmbedBuilder()
-                    .WithAuthor("Queued Playlist")
-                    .WithTitle(searchResponse.Playlist.Name)
-                    .WithUrl(search)
-                    .AddField("Tracks", searchResponse.Tracks.Length, true)
-                    .AddField("Playlist length", FormatTime(new TimeSpan(searchResponse.Tracks.Sum(t => t.Duration.Ticks))), true)
-                    .WithColor(Color.Blue)
-                    .WithFooter(DiscordClientHost.DisplayName(Context.User), Context.User.GetAvatarUrl()).Build();
-
-                if (player.State is not PlayerState.Playing)
-                {
-                    var nextTrack = await player.Queue.TryDequeueAsync();
-                    if (nextTrack != null) await player.PlayAsync(nextTrack, false);
-                }
-
-                await ModifyOriginalResponseAsync(properties => properties.Embed = embed);
-                return;
-            }
-        }
-        catch (NullReferenceException)
-        {
-            Log.Warning($"Got NullReferenceException when searching for {search}. Trying LoadTrackAsync next");
-        }
-
-        var track = await lavalink.Tracks.LoadTrackAsync(search, Uri.IsWellFormedUriString(search, UriKind.Absolute)
+        var searchResponse = await lavalink.Tracks.LoadTracksAsync(search, Uri.IsWellFormedUriString(search, UriKind.Absolute)
             ? TrackSearchMode.None
             : TrackSearchMode.YouTube);
 
-        if (track is null)
+        if (searchResponse.IsFailed || !searchResponse.HasMatches)
         {
             await ModifyOriginalResponseAsync(properties => properties.Content = $"Unable to find anything for `{Format.Sanitize(search)}`");
             return;
         }
 
-        var result = new EnrichedTrack(track, DiscordClientHost.DisplayName(Context.User));
+        if (searchResponse.IsPlaylist)
+        {
+            await player.Queue.AddRangeAsync(searchResponse.Tracks.Select(lavalinkTrack => new EnrichedTrack(lavalinkTrack, DiscordClientHost.DisplayName(Context.User))).ToList());
+            var embed = new EmbedBuilder()
+                .WithAuthor("Queued Playlist")
+                .WithTitle(searchResponse.Playlist.Name)
+                .WithUrl(search)
+                .AddField("Tracks", searchResponse.Tracks.Length, true)
+                .AddField("Playlist length", FormatTime(new TimeSpan(searchResponse.Tracks.Sum(t => t.Duration.Ticks))), true)
+                .WithColor(Color.Blue)
+                .WithFooter(DiscordClientHost.DisplayName(Context.User), Context.User.GetAvatarUrl()).Build();
 
-        var art = await artwork.ResolveAsync(result.Track);
+            if (player.State is not PlayerState.Playing)
+            {
+                var nextTrack = await player.Queue.TryDequeueAsync();
+                if (nextTrack != null) await player.PlayAsync(nextTrack, false);
+            }
 
+            await ModifyOriginalResponseAsync(properties => properties.Embed = embed);
+            return;
+        }
+
+        var result = new EnrichedTrack(searchResponse.Tracks.First(), DiscordClientHost.DisplayName(Context.User));
         if (player.State is PlayerState.Playing or PlayerState.Paused)
         {
             var embed = new EmbedBuilder()
@@ -116,7 +84,7 @@ public class MediaModule : BaseModule
                 .WithColor(Color.Blue)
                 .WithFooter(DiscordClientHost.DisplayName(Context.User), Context.User.GetAvatarUrl());
 
-            if (art != null) embed.WithThumbnailUrl(art.AbsoluteUri);
+            if (result.Track.ArtworkUri != null) embed.WithThumbnailUrl(result.Track.ArtworkUri.AbsoluteUri);
 
             await player.Queue.AddAsync(result);
 
@@ -135,7 +103,7 @@ public class MediaModule : BaseModule
                 .WithColor(Color.Green)
                 .WithFooter(DiscordClientHost.DisplayName(Context.User), Context.User.GetAvatarUrl());
 
-            if (art != null) embed.WithThumbnailUrl(art.AbsoluteUri);
+            if (result.Track.ArtworkUri != null) embed.WithThumbnailUrl(result.Track.ArtworkUri.AbsoluteUri);
 
             await player.PlayAsync(result);
 
@@ -221,7 +189,7 @@ public class MediaModule : BaseModule
                     $"{simulatorRadio.song} by {simulatorRadio.artist}")
                 .WithThumbnailUrl(simulatorRadio.artwork)
                 .WithColor(Color.Blue);
-            
+
             await RespondAsync(embed: embed.Build());
         }
         else
@@ -241,15 +209,13 @@ public class MediaModule : BaseModule
                 bar += $"\n\n{FormatTime(player.Position!.Value.Position)} / {FormatTime(player.CurrentTrack.Duration)}";
             }
 
-            var art = await artwork.ResolveAsync(player.CurrentTrack);
-
             var embed = new EmbedBuilder()
                 .WithTitle("Currently playing")
                 .WithDescription(
                     $"[{player.CurrentTrack.Title}]({player.CurrentTrack.Uri})\n\n{bar}")
                 .WithColor(Color.Blue);
 
-            if (art != null) embed.WithThumbnailUrl(art.AbsoluteUri);
+            if (player.CurrentTrack.ArtworkUri != null) embed.WithThumbnailUrl(player.CurrentTrack.ArtworkUri.AbsoluteUri);
 
             await RespondAsync(embed: embed.Build());
         }
