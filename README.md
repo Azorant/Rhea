@@ -31,6 +31,7 @@ services:
       - TOKEN=bot token
       - GUILD_CHANNEL=channel ID for guild events
       - REDIS_URI=redis
+      - SPONSOR_BLOCK=false
   lavalink:
     image: ghcr.io/lavalink-devs/lavalink:4
     container_name: lavalink
@@ -57,3 +58,5 @@ That's all! Now you're ready to listen to some music.
 There are more config options available for Lavalink [here](https://lavalink.dev/configuration/).
 
 If you'd wish to play Apple Music and/or Spotify links, then you'll have to setup the [LavaSrc](https://github.com/topi314/LavaSrc) plugin for Lavalink.
+
+In order to utilize SponsorBlock you'll have to setup the [SponsorBlock](https://github.com/topi314/Sponsorblock-Plugin) plugin for Lavalink.

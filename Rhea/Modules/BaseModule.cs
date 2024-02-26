@@ -1,7 +1,10 @@
-﻿using Discord.Interactions;
+﻿using System.Collections.Immutable;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
+using Lavalink4NET.Integrations.SponsorBlock;
+using Lavalink4NET.Integrations.SponsorBlock.Extensions;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Vote;
 using Rhea.Models;
@@ -28,6 +31,11 @@ public class BaseModule(IAudioService lavalink, RedisService redis) : Interactio
             new PlayerRetrieveOptions(joinBehavior));
         if (!result.IsSuccess && result.Status != PlayerRetrieveStatus.BotNotConnected)
             throw new Exception($"Unable to retrieve player: {result.Status}");
+        if (result.Player != null && bool.TryParse(Environment.GetEnvironmentVariable("SPONSOR_BLOCK"), out var useSponsorBlock) && useSponsorBlock)
+        {
+            await result.Player.UpdateSponsorBlockCategoriesAsync(ImmutableArray.Create(SegmentCategory.Intro, SegmentCategory.Sponsor, SegmentCategory.Outro,
+                SegmentCategory.SelfPromotion));
+        }
         return result.Player;
     }
 

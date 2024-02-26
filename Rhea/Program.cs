@@ -3,6 +3,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Lavalink4NET.Extensions;
 using Lavalink4NET.InactivityTracking.Extensions;
+using Lavalink4NET.Integrations.SponsorBlock.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -17,7 +18,12 @@ public class Program
     {
         var builder = new HostApplicationBuilder();
         BuildServices(builder.Services);
-        builder.Build().Run();
+        var app = builder.Build();
+        if (bool.TryParse(Environment.GetEnvironmentVariable("SPONSOR_BLOCK"), out var useSponsorBlock) && useSponsorBlock)
+        {
+            app.UseSponsorBlock();
+        }
+        app.Run();
     }
 
     private static void Main()
