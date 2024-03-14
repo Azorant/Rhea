@@ -30,9 +30,8 @@ services:
       - LAVALINK_HOST=lavalink:2333
       - TOKEN=bot token
       - GUILD_CHANNEL=channel ID for guild events
-      - REDIS_URI=redis
   lavalink:
-    image: ghcr.io/lavalink-devs/lavalink:4
+    image: ghcr.io/lavalink-devs/lavalink:latest
     container_name: lavalink
     restart: unless-stopped
     environment:
@@ -40,12 +39,6 @@ services:
       - LAVALINK_SERVER_PASSWORD=youshallnotpass
     expose:
       - 2333
-  redis:
-    image: redis:alpine
-    container_name: redis
-    restart: unless-stopped
-    expose:
-      - 6379
 ```
 
 Run `docker compose up -d` to startup Rhea and Lavalink.

@@ -11,8 +11,7 @@ using Serilog;
 
 namespace Rhea.Modules;
 
-public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio, RedisService redis)
-    : BaseModule(lavalink, redis)
+public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio) : BaseModule(lavalink)
 {
     [SlashCommand("play", "Play some music")]
     public async Task Play([Summary(description: "A search term or url")] string search)

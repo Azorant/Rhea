@@ -9,7 +9,7 @@ using Rhea.Services;
 
 namespace Rhea.Modules;
 
-public class BaseModule(IAudioService lavalink, RedisService redis) : InteractionModuleBase<SocketInteractionContext>
+public class BaseModule(IAudioService lavalink) : InteractionModuleBase<SocketInteractionContext>
 {
     protected async ValueTask<VoteLavalinkPlayer?> GetPlayer(
         PlayerChannelBehavior joinBehavior = PlayerChannelBehavior.Join)
@@ -20,12 +20,8 @@ public class BaseModule(IAudioService lavalink, RedisService redis) : Interactio
         {
             throw new Exception($"Unable to connect to {member.VoiceChannel.Mention}");
         }
-
-        var result = await lavalink.Players.RetrieveAsync(Context, PlayerFactory.Vote, new VoteLavalinkPlayerOptions
-            {
-                TrackQueue = new TrackQueue(redis, Context.Guild.Id)
-            },
-            new PlayerRetrieveOptions(joinBehavior));
+        
+        var result = await lavalink.Players.RetrieveAsync(Context, PlayerFactory.Vote, new PlayerRetrieveOptions(joinBehavior));
         if (!result.IsSuccess && result.Status != PlayerRetrieveStatus.BotNotConnected)
             throw new Exception($"Unable to retrieve player: {result.Status}");
         return result.Player;

@@ -18,13 +18,12 @@ internal sealed class DiscordClientHost : IHostedService
     private readonly DiscordSocketClient client;
     private readonly InteractionService interactionService;
     private readonly IAudioService lavalink;
-    private readonly RedisService redis;
     private readonly IServiceProvider serviceProvider;
 
     public DiscordClientHost(
         DiscordSocketClient client,
         InteractionService interactionService,
-        IServiceProvider serviceProvider, IAudioService lavalink, RedisService redis)
+        IServiceProvider serviceProvider, IAudioService lavalink)
     {
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(interactionService);
@@ -34,35 +33,17 @@ internal sealed class DiscordClientHost : IHostedService
         this.interactionService = interactionService;
         this.serviceProvider = serviceProvider;
         this.lavalink = lavalink;
-        this.redis = redis;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         client.InteractionCreated += InteractionCreated;
         client.Ready += ClientReady;
-        client.Ready += ResumePlayers;
         client.JoinedGuild += JoinedGuild;
         client.LeftGuild += LeftGuild;
         client.Log += LogAsync;
         interactionService.Log += LogAsync;
         interactionService.SlashCommandExecuted += SlashCommandExecuted;
-
-        lavalink.TrackEnded += async (_, args) =>
-        {
-            await redis.DeletePlayingAsync(args.Player.GuildId);
-        };
-
-        lavalink.TrackStarted += async (_, args) =>
-        {
-            await redis.SetPlayingAsync(args.Player.GuildId, new PlayingTrack((EnrichedTrack)((IVoteLavalinkPlayer)args.Player).CurrentItem!, args.Player.VoiceChannelId));
-        };
-
-        lavalink.Players.PlayerDestroyed += async (_, args) =>
-        {
-            await redis.ClearQueueAsync(args.Player.GuildId);
-            await redis.DeletePlayingAsync(args.Player.GuildId);
-        };
     
         await client
             .LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("TOKEN"))
@@ -114,41 +95,6 @@ internal sealed class DiscordClientHost : IHostedService
         else
             await interactionService.RegisterCommandsGloballyAsync();
 
-    }
-
-    private async Task ResumePlayers()
-    {
-        client.Ready -= ResumePlayers;
-        var players = await redis.GetPlayers();
-
-        foreach (var ID in players)
-        {
-            var playing = await redis.GetPlayingAsync(ID);
-            if (playing is null) continue;
-
-            var channel = (SocketVoiceChannel)client.GetChannel(playing.channelID);
-            if (!channel.ConnectedUsers.Any(x => !x.IsBot))
-            {
-                // No humans left in channel, deleting cache
-                await redis.DeletePlayingAsync(ID);
-                await redis.ClearQueueAsync(ID);
-                continue;
-            }
-
-            var result = await lavalink.Players.RetrieveAsync(ID, playing.channelID, PlayerFactory.Vote, Options.Create(new VoteLavalinkPlayerOptions
-            {
-                TrackQueue = new TrackQueue(redis, ID)
-            }), new PlayerRetrieveOptions(PlayerChannelBehavior.Join));
-            if (!result.IsSuccess && result.Status != PlayerRetrieveStatus.BotNotConnected || result.Player is null)
-            {
-                await redis.DeletePlayingAsync(ID);
-                await redis.ClearQueueAsync(ID);
-                continue;
-            }
-
-            await result.Player.PlayAsync(playing.track, false, new TrackPlayProperties(playing.position));
-            Log.Information($"[Players] Resumed player for {ID}");
-        }
     }
 
     private async Task JoinedGuild(SocketGuild guild)

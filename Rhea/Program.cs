@@ -52,8 +52,6 @@ public class Program
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton<InteractionService>()
             .AddSingleton<SimulatorRadio>()
-            .AddSingleton<RedisService>()
-            .AddHostedService<Positioning>()
             .AddHostedService<DiscordClientHost>()
             .AddHostedService<Status>()
             .AddLavalink()

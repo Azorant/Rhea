@@ -7,7 +7,7 @@ using Rhea.Services;
 
 namespace Rhea.Modules;
 
-public class ControlsModule(IAudioService lavalink, RedisService redis) : BaseModule(lavalink, redis)
+public class ControlsModule(IAudioService lavalink) : BaseModule(lavalink)
 {
     [SlashCommand("resume", "Resume playing")]
     public async Task ResumeCommand()
