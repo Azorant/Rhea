@@ -3,6 +3,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Lavalink4NET.Extensions;
 using Lavalink4NET.InactivityTracking.Extensions;
+using Lavalink4NET.InactivityTracking.Trackers.Idle;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -61,6 +62,7 @@ public class Program
                 options.BaseAddress = new Uri($"http://{Environment.GetEnvironmentVariable("LAVALINK_HOST")}/");
                 options.Passphrase = Environment.GetEnvironmentVariable("LAVALINK_AUTH")!;
             })
+            .Configure<IdleInactivityTrackerOptions>(config => { config.Timeout = TimeSpan.FromHours(1); })
             .AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Warning));
     }
 }
