@@ -2,6 +2,7 @@
 using Discord;
 using Discord.Interactions;
 using Lavalink4NET;
+using Rhea.Models;
 using Rhea.Services;
 
 namespace Rhea.Modules;
@@ -20,7 +21,9 @@ public class MiscModule(IAudioService lavalink) : InteractionModuleBase<SocketIn
             .AddField("Library", $"Discord.Net {library.Version!.ToString()}", true)
             .AddField("Players", lavalink.Players.Players.Count().ToString("N0"), true)
             .AddField("Developer", $"{DiscordClientHost.DisplayName(korrdyn)}", true)
-            .AddField("Links", $"[GitHub](https://github.com/Korrdyn/Rhea)\n[Support](https://discord.gg/{Environment.GetEnvironmentVariable("DISCORD_INVITE")})\n[Patreon](https://patreon.com/Korrdyn)", true)
+            .AddField("Links",
+                $"[GitHub](https://github.com/Korrdyn/Rhea)\n[Support](https://discord.gg/{Environment.GetEnvironmentVariable("DISCORD_INVITE")})\n[Patreon](https://patreon.com/Korrdyn)",
+                true)
             .WithColor(Color.Blue)
             .WithCurrentTimestamp()
             .WithFooter(DiscordClientHost.DisplayName(Context.User), Context.User.GetAvatarUrl())

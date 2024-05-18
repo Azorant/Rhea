@@ -1,12 +1,13 @@
-﻿using Discord.Interactions;
+﻿using Discord;
+using Discord.Interactions;
 using Lavalink4NET;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Players.Vote;
-using Rhea.Services;
 
 namespace Rhea.Modules;
 
+[CommandContextType(InteractionContextType.Guild)]
 public class ControlsModule(IAudioService lavalink) : BaseModule(lavalink)
 {
     [SlashCommand("resume", "Resume playing")]
@@ -216,7 +217,7 @@ public class ControlsModule(IAudioService lavalink) : BaseModule(lavalink)
     // TODO: Investigate why queue loop isn't working as intended
     [SlashCommand("loop", "Set whether or not the queue should loop")]
     public async Task LoopCommand(
-        [Summary(description: "Loop mode"), Choice("Disable", (int)TrackRepeatMode.None), Choice("Track", (int)TrackRepeatMode.Track)]
+        [Summary(description: "Loop mode"), Choice("Disable", (int)TrackRepeatMode.None), Choice("Track", (int)TrackRepeatMode.Track), Choice("Queue", (int)TrackRepeatMode.Queue)]
         int mode)
     {
         var member = Context.Guild.GetUser(Context.User.Id);

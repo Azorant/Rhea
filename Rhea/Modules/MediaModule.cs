@@ -7,10 +7,10 @@ using Lavalink4NET.Players.Vote;
 using Lavalink4NET.Rest.Entities.Tracks;
 using Rhea.Models;
 using Rhea.Services;
-using Serilog;
 
 namespace Rhea.Modules;
 
+[CommandContextType(InteractionContextType.Guild)]
 public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio) : BaseModule(lavalink)
 {
     [SlashCommand("play", "Play some music")]
@@ -69,44 +69,53 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio) 
         if (player.State is PlayerState.Playing or PlayerState.Paused)
         {
             var embed = new EmbedBuilder()
-                .WithAuthor("Queued Track")
-                .WithTitle(result.Track.Title)
+                .WithTitle("Queued Track")
                 .WithUrl(result.Track.Uri!.AbsoluteUri)
-                .AddField("Channel", result.Track.Author, true)
-                .AddField("Duration", result.Track.IsLiveStream
-                    ? "Live stream"
-                    : FormatTime(result.Track.Duration), true)
-                .AddField("Time until playing",
-                    FormatTime(new TimeSpan(player.Queue.Sum(t => t.Track!.Duration.Ticks) + player.CurrentTrack!.Duration.Ticks - player.Position!.Value.Position.Ticks)),
-                    true)
-                .AddField("Queue position", player.Queue.Count + 1)
+                .WithImageUrl("attachment://cover.png")
                 .WithColor(Color.Blue)
                 .WithFooter(DiscordClientHost.DisplayName(Context.User), Context.User.GetAvatarUrl());
-
-            if (result.Track.ArtworkUri != null) embed.WithThumbnailUrl(result.Track.ArtworkUri.AbsoluteUri);
+            var image = await ImageGenerator.Generate(new TrackMetadata()
+            {
+                Artist = result.Track.Author,
+                ArtworkUri = result.Track.ArtworkUri?.AbsoluteUri,
+                Title = result.Track.Title,
+                Duration = result.Track.Duration,
+                Livestream = result.Track.IsLiveStream,
+                QueuePosition = player.Queue.Count + 1,
+                TimeToPlay = new TimeSpan(player.Queue.Sum(t => t.Track!.Duration.Ticks) + player.CurrentTrack!.Duration.Ticks - player.Position!.Value.Position.Ticks)
+            });
 
             await player.Queue.AddAsync(result);
 
-            await ModifyOriginalResponseAsync(m => m.Embed = embed.Build());
+            await ModifyOriginalResponseAsync(m =>
+            {
+                m.Embed = embed.Build();
+                m.Attachments = new List<FileAttachment>() { image };
+            });
         }
         else
         {
             var embed = new EmbedBuilder()
-                .WithAuthor("Now Playing")
-                .WithTitle(result.Track.Title)
+                .WithTitle("Now Playing")
                 .WithUrl(result.Track.Uri!.AbsoluteUri)
-                .AddField("Channel", result.Track.Author, true)
-                .AddField("Duration", result.Track.IsLiveStream
-                    ? "Live stream"
-                    : FormatTime(result.Track.Duration), true)
+                .WithImageUrl("attachment://cover.png")
                 .WithColor(Color.Green)
                 .WithFooter(DiscordClientHost.DisplayName(Context.User), Context.User.GetAvatarUrl());
-
-            if (result.Track.ArtworkUri != null) embed.WithThumbnailUrl(result.Track.ArtworkUri.AbsoluteUri);
+            var image = await ImageGenerator.Generate(new TrackMetadata()
+            {
+                Artist = result.Track.Author,
+                ArtworkUri = result.Track.ArtworkUri?.AbsoluteUri,
+                Title = result.Track.Title,
+                Duration = result.Track.Duration,
+                Livestream = result.Track.IsLiveStream
+            });
 
             await player.PlayAsync(result);
-
-            await ModifyOriginalResponseAsync(properties => properties.Embed = embed.Build());
+            await ModifyOriginalResponseAsync(m =>
+            {
+                m.Embed = embed.Build();
+                m.Attachments = new List<FileAttachment>() { image };
+            });
         }
     }
 
@@ -193,30 +202,22 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio) 
         }
         else
         {
-            var bar = "";
-
-            if (player.CurrentTrack!.IsLiveStream)
-            {
-                bar = "Live stream";
-            }
-            else
-            {
-                var progress = (int)Math.Floor((decimal)player.Position!.Value.Position.Ticks / player.CurrentTrack!.Duration.Ticks * 100 / 4);
-                if (progress - 1 > 0) bar += new string('▬', progress - 1);
-                bar += "🔘";
-                bar += new string('▬', 25 - progress);
-                bar += $"\n\n{FormatTime(player.Position!.Value.Position)} / {FormatTime(player.CurrentTrack.Duration)}";
-            }
-
             var embed = new EmbedBuilder()
-                .WithTitle("Currently playing")
-                .WithDescription(
-                    $"[{player.CurrentTrack.Title}]({player.CurrentTrack.Uri})\n\n{bar}")
-                .WithColor(Color.Blue);
-
-            if (player.CurrentTrack.ArtworkUri != null) embed.WithThumbnailUrl(player.CurrentTrack.ArtworkUri.AbsoluteUri);
-
-            await RespondAsync(embed: embed.Build());
+                .WithTitle("Currently Playing")
+                .WithUrl(player.CurrentTrack!.Uri!.AbsoluteUri)
+                .WithImageUrl("attachment://cover.png")
+                .WithColor(Color.Blue)
+                .WithFooter(DiscordClientHost.DisplayName(Context.User), Context.User.GetAvatarUrl());
+            var image = await ImageGenerator.Generate(new TrackMetadata()
+            {
+                Artist = player.CurrentTrack.Author,
+                ArtworkUri = player.CurrentTrack.ArtworkUri?.AbsoluteUri,
+                Title = player.CurrentTrack.Title,
+                Duration = player.CurrentTrack.Duration,
+                Livestream = player.CurrentTrack.IsLiveStream,
+                CurrentPosition = player.Position!.Value.Position
+            });
+            await RespondWithFileAsync(attachment: image, embed: embed.Build());
         }
     }
 

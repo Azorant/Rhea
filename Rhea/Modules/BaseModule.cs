@@ -27,11 +27,11 @@ public class BaseModule(IAudioService lavalink) : InteractionModuleBase<SocketIn
         return result.Player;
     }
 
-    protected string FormatTime(TimeSpan time)
+    public static string FormatTime(TimeSpan time)
         => time.ToString(@"hh\:mm\:ss").TrimStart('0', ':');
 
-    protected bool IsPrivileged(SocketGuildUser Member)
-        => Member.GetPermissions(Member.VoiceChannel).MoveMembers ||
-           Member.Roles.FirstOrDefault(role => role.Name.ToLower() == "dj") != null ||
-           !Member.VoiceChannel.ConnectedUsers.Any(user => !user.IsBot && user.Id != Member.Id);
+    protected static bool IsPrivileged(SocketGuildUser member)
+        => member.GetPermissions(member.VoiceChannel).MoveMembers ||
+           member.Roles.FirstOrDefault(role => role.Name.ToLower() == "dj") != null ||
+           !member.VoiceChannel.ConnectedUsers.Any(user => !user.IsBot && user.Id != member.Id);
 }
