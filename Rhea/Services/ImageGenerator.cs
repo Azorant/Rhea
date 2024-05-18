@@ -51,10 +51,13 @@ public static class ImageGenerator
 
         artwork.Mutate(x => x.Resize(new Size(636)).ApplyRoundedCorners(20));
         final.Mutate(x => x.DrawImage(artwork, new Point(42, 42), 1));
+        
+        FontCollection collection = new();
+        FontFamily family = collection.Add("./Resources/Roboto-Regular.ttf");
+        Font largeFont = family.CreateFont(48, FontStyle.Regular);
+        Font smallFont = family.CreateFont(32, FontStyle.Regular);
+        Font smallerFont = family.CreateFont(28, FontStyle.Regular);
 
-        Font largeFont = SystemFonts.CreateFont("Arial", 48);
-        Font smallFont = SystemFonts.CreateFont("Arial", 32);
-        Font smallerFont = SystemFonts.CreateFont("Arial", 28);
 
 
         var baseHeight = 60;
