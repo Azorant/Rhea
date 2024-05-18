@@ -6,12 +6,14 @@ name: Docker
 # documentation.
 
 on:
+  schedule:
+    - cron: '0 12 * * *'
   push:
-    branches: ['master']
+    branches: [ "master" ]
     # Publish semver tags as releases.
-    tags: ['v*.*.*']
+    tags: [ 'v*.*.*' ]
   pull_request:
-    branches: ['master']
+    branches: [ "master" ]
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -19,8 +21,10 @@ env:
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
 
+
 jobs:
   build:
+
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -31,7 +35,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
