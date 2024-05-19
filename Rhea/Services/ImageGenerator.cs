@@ -27,6 +27,14 @@ public static class ImageGenerator
             var httpResult = await httpClient.GetAsync(metadata.ArtworkUri);
             await using var resultStream = await httpResult.Content.ReadAsStreamAsync();
             artwork = (await Image.LoadAsync(resultStream)).CloneAs<Bgra32>();
+            var ratio = (float)artwork.Width / artwork.Height;
+            if (Math.Abs(ratio - 1f) > 0)
+            {
+                var smallestSize = artwork.Height > artwork.Width ? artwork.Width : artwork.Height;
+                int xPos = artwork.Width / 2 - smallestSize / 2;
+                int yPos = artwork.Height / 2 - smallestSize / 2;
+                artwork.Mutate(x => x.Crop(new Rectangle(xPos, yPos, smallestSize, smallestSize)));
+            }
         }
         else
         {
@@ -51,13 +59,12 @@ public static class ImageGenerator
 
         artwork.Mutate(x => x.Resize(new Size(636)).ApplyRoundedCorners(20));
         final.Mutate(x => x.DrawImage(artwork, new Point(42, 42), 1));
-        
+
         FontCollection collection = new();
         FontFamily family = collection.Add("./Resources/Roboto-Regular.ttf");
         Font largeFont = family.CreateFont(48, FontStyle.Regular);
         Font smallFont = family.CreateFont(32, FontStyle.Regular);
         Font smallerFont = family.CreateFont(28, FontStyle.Regular);
-
 
 
         var baseHeight = 60;
