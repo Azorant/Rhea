@@ -118,6 +118,7 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio, 
                 Requester = DiscordClientHost.DisplayName(Context.User)
             });
 
+            stats.TracksLoaded?.Inc();
             await player.PlayAsync(result);
             await ModifyOriginalResponseAsync(m =>
             {
