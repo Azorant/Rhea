@@ -28,7 +28,7 @@ public class BaseModule(IAudioService lavalink) : InteractionModuleBase<SocketIn
     }
 
     public static string FormatTime(TimeSpan time)
-        => time.ToString(@"hh\:mm\:ss").TrimStart('0', ':');
+        => time.ToString(@"dd\:hh\:mm\:ss").TrimStart('0', ':');
 
     protected static bool IsPrivileged(SocketGuildUser member)
         => member.GetPermissions(member.VoiceChannel).MoveMembers ||

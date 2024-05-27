@@ -47,11 +47,9 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio) 
         {
             await player.Queue.AddRangeAsync(searchResponse.Tracks.Select(lavalinkTrack => new EnrichedTrack(lavalinkTrack, DiscordClientHost.DisplayName(Context.User))).ToList());
             var embed = new EmbedBuilder()
-                .WithAuthor("Queued Playlist")
-                .WithTitle(searchResponse.Playlist.Name)
+                .WithTitle("Queued Playlist")
                 .WithUrl(search)
-                .AddField("Tracks", searchResponse.Tracks.Length, true)
-                .AddField("Playlist length", FormatTime(new TimeSpan(searchResponse.Tracks.Sum(t => t.Duration.Ticks))), true)
+                .WithImageUrl("attachment://playlist.png")
                 .WithColor(Color.Blue)
                 .WithFooter(DiscordClientHost.DisplayName(Context.User), Context.User.GetAvatarUrl()).Build();
 
@@ -61,7 +59,13 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio) 
                 if (nextTrack != null) await player.PlayAsync(nextTrack, false);
             }
 
-            await ModifyOriginalResponseAsync(properties => properties.Embed = embed);
+            var image = await ImageGenerator.GeneratePlaylist(searchResponse.Playlist, searchResponse.Tracks);
+
+            await ModifyOriginalResponseAsync(m =>
+            {
+                m.Embed = embed;
+                m.Attachments = new List<FileAttachment>() { image };
+            });
             return;
         }
 
@@ -74,7 +78,7 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio) 
                 .WithImageUrl("attachment://cover.png")
                 .WithColor(Color.Blue)
                 .WithFooter(DiscordClientHost.DisplayName(Context.User), Context.User.GetAvatarUrl());
-            var image = await ImageGenerator.Generate(new TrackMetadata()
+            var image = await ImageGenerator.GenerateSingle(new TrackMetadata()
             {
                 Artist = result.Track.Author,
                 ArtworkUri = result.Track.ArtworkUri?.AbsoluteUri,
@@ -82,7 +86,8 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio) 
                 Duration = result.Track.Duration,
                 Livestream = result.Track.IsLiveStream,
                 QueuePosition = player.Queue.Count + 1,
-                TimeToPlay = new TimeSpan(player.Queue.Sum(t => t.Track!.Duration.Ticks) + player.CurrentTrack!.Duration.Ticks - player.Position!.Value.Position.Ticks)
+                TimeToPlay = new TimeSpan(player.Queue.Sum(t => t.Track!.Duration.Ticks) + player.CurrentTrack!.Duration.Ticks - player.Position!.Value.Position.Ticks),
+                Requester = DiscordClientHost.DisplayName(Context.User)
             });
 
             await player.Queue.AddAsync(result);
@@ -101,13 +106,14 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio) 
                 .WithImageUrl("attachment://cover.png")
                 .WithColor(Color.Green)
                 .WithFooter(DiscordClientHost.DisplayName(Context.User), Context.User.GetAvatarUrl());
-            var image = await ImageGenerator.Generate(new TrackMetadata()
+            var image = await ImageGenerator.GenerateSingle(new TrackMetadata()
             {
                 Artist = result.Track.Author,
                 ArtworkUri = result.Track.ArtworkUri?.AbsoluteUri,
                 Title = result.Track.Title,
                 Duration = result.Track.Duration,
-                Livestream = result.Track.IsLiveStream
+                Livestream = result.Track.IsLiveStream,
+                Requester = DiscordClientHost.DisplayName(Context.User)
             });
 
             await player.PlayAsync(result);
@@ -208,14 +214,15 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio) 
                 .WithImageUrl("attachment://cover.png")
                 .WithColor(Color.Blue)
                 .WithFooter(DiscordClientHost.DisplayName(Context.User), Context.User.GetAvatarUrl());
-            var image = await ImageGenerator.Generate(new TrackMetadata()
+            var image = await ImageGenerator.GenerateSingle(new TrackMetadata()
             {
                 Artist = player.CurrentTrack.Author,
                 ArtworkUri = player.CurrentTrack.ArtworkUri?.AbsoluteUri,
                 Title = player.CurrentTrack.Title,
                 Duration = player.CurrentTrack.Duration,
                 Livestream = player.CurrentTrack.IsLiveStream,
-                CurrentPosition = player.Position!.Value.Position
+                CurrentPosition = player.Position!.Value.Position,
+                Requester = ((EnrichedTrack)player.CurrentItem!).Requester
             });
             await RespondWithFileAsync(attachment: image, embed: embed.Build());
         }
