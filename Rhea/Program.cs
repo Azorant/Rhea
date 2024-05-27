@@ -9,6 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Rhea.Services;
 using Serilog;
+using Monitor = Rhea.Services.Monitor;
 
 namespace Rhea;
 
@@ -53,8 +54,10 @@ public class Program
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton<InteractionService>()
             .AddSingleton<SimulatorRadio>()
+            .AddSingleton<Statistics>()
             .AddHostedService<DiscordClientHost>()
             .AddHostedService<Status>()
+            .AddHostedService<Monitor>()
             .AddLavalink()
             .AddInactivityTracking()
             .ConfigureLavalink(options =>

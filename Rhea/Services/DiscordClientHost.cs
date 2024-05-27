@@ -3,11 +3,8 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Lavalink4NET;
-using Lavalink4NET.Players;
-using Lavalink4NET.Players.Vote;
+using Lavalink4NET.Events.Players;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
-using Rhea.Models;
 using Serilog;
 using Serilog.Events;
 
@@ -19,11 +16,12 @@ internal sealed class DiscordClientHost : IHostedService
     private readonly InteractionService interactionService;
     private readonly IAudioService lavalink;
     private readonly IServiceProvider serviceProvider;
+    private readonly Statistics stats;
 
     public DiscordClientHost(
         DiscordSocketClient client,
         InteractionService interactionService,
-        IServiceProvider serviceProvider, IAudioService lavalink)
+        IServiceProvider serviceProvider, IAudioService lavalink, Statistics stats)
     {
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(interactionService);
@@ -33,6 +31,7 @@ internal sealed class DiscordClientHost : IHostedService
         this.interactionService = interactionService;
         this.serviceProvider = serviceProvider;
         this.lavalink = lavalink;
+        this.stats = stats;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -44,7 +43,8 @@ internal sealed class DiscordClientHost : IHostedService
         client.Log += LogAsync;
         interactionService.Log += LogAsync;
         interactionService.SlashCommandExecuted += SlashCommandExecuted;
-    
+        lavalink.TrackStarted += TrackStarted;
+
         await client
             .LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("TOKEN"))
             .ConfigureAwait(false);
@@ -63,6 +63,7 @@ internal sealed class DiscordClientHost : IHostedService
         client.Log -= LogAsync;
         interactionService.Log -= LogAsync;
         interactionService.SlashCommandExecuted -= SlashCommandExecuted;
+        lavalink.TrackStarted -= TrackStarted;
 
         await client
             .StopAsync()
@@ -94,11 +95,12 @@ internal sealed class DiscordClientHost : IHostedService
             await interactionService.RegisterCommandsToGuildAsync(ulong.Parse(Environment.GetEnvironmentVariable("DEV_GUILD")!));
         else
             await interactionService.RegisterCommandsGloballyAsync();
-
+        stats.Guilds?.Set(client.Guilds.Count);
     }
 
     private async Task JoinedGuild(SocketGuild guild)
     {
+        stats.Guilds?.Inc();
         if (!ulong.TryParse(Environment.GetEnvironmentVariable("GUILD_CHANNEL"), out var channelID)) return;
 
         if (client.GetChannel(channelID) is not SocketTextChannel channel || channel.GetChannelType() != ChannelType.Text) return;
@@ -118,6 +120,7 @@ internal sealed class DiscordClientHost : IHostedService
 
     private async Task LeftGuild(SocketGuild guild)
     {
+        stats.Guilds?.Dec();
         if (!ulong.TryParse(Environment.GetEnvironmentVariable("GUILD_CHANNEL"), out var channelID)) return;
 
         if (client.GetChannel(channelID) is not SocketTextChannel channel || channel.GetChannelType() != ChannelType.Text) return;
@@ -151,8 +154,9 @@ internal sealed class DiscordClientHost : IHostedService
         await Task.CompletedTask;
     }
 
-    private static async Task SlashCommandExecuted(SlashCommandInfo command, IInteractionContext context, IResult result)
+    private async Task SlashCommandExecuted(SlashCommandInfo command, IInteractionContext context, IResult result)
     {
+        stats.Commands?.WithLabels([command.Name]).Inc();
         if (!result.IsSuccess)
         {
             Log.Warning("[Command] {ContextUser} tried to run {CommandName} but ran into {S}", context.User, command.Name, result.Error.ToString());
@@ -204,6 +208,12 @@ internal sealed class DiscordClientHost : IHostedService
             Log.Information(
                 $"[Command] {guild} {DisplayName(context.User)} ({context.User.Id}) ran /{(string.IsNullOrEmpty(command.Module.Parent?.SlashGroupName) ? string.Empty : command.Module.Parent.SlashGroupName + ' ')}{(string.IsNullOrEmpty(command.Module.SlashGroupName) ? string.Empty : command.Module.SlashGroupName + ' ')}{command.Name} {ParseArgs(((SocketSlashCommandData)context.Interaction.Data).Options)}");
         }
+    }
+
+    private Task TrackStarted(object _, TrackStartedEventArgs args)
+    {
+        stats.TracksPlayed?.Inc();
+        return Task.CompletedTask;
     }
 
     public static string DisplayName(IUser user) => user.Discriminator == "0000"

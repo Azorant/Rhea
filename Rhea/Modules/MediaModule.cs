@@ -11,7 +11,7 @@ using Rhea.Services;
 namespace Rhea.Modules;
 
 [CommandContextType(InteractionContextType.Guild)]
-public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio) : BaseModule(lavalink)
+public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio, Statistics stats) : BaseModule(lavalink)
 {
     [SlashCommand("play", "Play some music")]
     public async Task Play([Summary(description: "A search term or url")] string search)
@@ -45,6 +45,7 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio) 
 
         if (searchResponse.IsPlaylist)
         {
+            stats.TracksLoaded?.Inc(searchResponse.Tracks.Length);
             await player.Queue.AddRangeAsync(searchResponse.Tracks.Select(lavalinkTrack => new EnrichedTrack(lavalinkTrack, DiscordClientHost.DisplayName(Context.User))).ToList());
             var embed = new EmbedBuilder()
                 .WithTitle("Queued Playlist")
@@ -90,6 +91,7 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio) 
                 Requester = DiscordClientHost.DisplayName(Context.User)
             });
 
+            stats.TracksLoaded?.Inc();
             await player.Queue.AddAsync(result);
 
             await ModifyOriginalResponseAsync(m =>
