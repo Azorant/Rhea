@@ -30,6 +30,10 @@ services:
       - LAVALINK_HOST=lavalink:2333
       - TOKEN=bot token
       - GUILD_CHANNEL=channel ID for guild events
+      - PROMETHEUS_ENABLED=true
+      - PROMETHEUS_PREFIX=rhea
+    ports:
+      - 3400:3400
   lavalink:
     image: ghcr.io/lavalink-devs/lavalink:latest
     container_name: lavalink
