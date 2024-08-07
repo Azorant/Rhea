@@ -13,16 +13,16 @@ public class MiscModule(IAudioService lavalink) : InteractionModuleBase<SocketIn
     public async Task AboutCommand()
     {
         var library = Assembly.GetAssembly(typeof(InteractionModuleBase))!.GetName();
-        var korrdyn = Context.Client.GetUser(160168328520794112);
+        var self = Context.Client.GetUser(160168328520794112);
         var embed = new EmbedBuilder().WithAuthor(Context.Client.CurrentUser.Username, Context.Client.CurrentUser.GetAvatarUrl())
             .WithDescription("Rhea was created to be a free, easy to use, no ads music bot.")
             .AddField("Guilds", Context.Client.Guilds.Count.ToString("N0"), true)
             .AddField("Users", Context.Client.Guilds.Select(guild => guild.MemberCount).Sum().ToString("N0"), true)
             .AddField("Library", $"Discord.Net {library.Version!.ToString()}", true)
             .AddField("Players", lavalink.Players.Players.Count().ToString("N0"), true)
-            .AddField("Developer", $"{DiscordClientHost.DisplayName(korrdyn)}", true)
+            .AddField("Developer", $"{DiscordClientHost.DisplayName(self)}", true)
             .AddField("Links",
-                $"[GitHub](https://github.com/Korrdyn/Rhea)\n[Support](https://discord.gg/{Environment.GetEnvironmentVariable("DISCORD_INVITE")})\n[Patreon](https://patreon.com/Korrdyn)",
+                $"[GitHub](https://github.com/Azorant/Rhea)\n[Support](https://discord.gg/{Environment.GetEnvironmentVariable("DISCORD_INVITE")})\n[Ko-fi](https://ko-fi.com/azorant)",
                 true)
             .WithColor(Color.Blue)
             .WithCurrentTimestamp()

@@ -6,8 +6,8 @@
   <a href="https://discord.gg/66dp9gxMZx">
     <img src="https://discordapp.com/api/guilds/918704583717572639/widget.png?style=shield" alt="Discord Server">
   </a>
-  <a href="https://github.com/Korrdyn/Rhea/actions">
-    <img src="https://img.shields.io/github/actions/workflow/status/Korrdyn/Rhea/docker-publish.yml?label=Build" alt="GitHub Actions">
+  <a href="https://github.com/Azorant/Rhea/actions">
+    <img src="https://img.shields.io/github/actions/workflow/status/Azorant/Rhea/docker-publish.yml?label=Build" alt="GitHub Actions">
   </a>
 </p>
 
@@ -21,7 +21,7 @@ version: '3.8'
 
 services:
   rhea:
-    image: ghcr.io/korrdyn/rhea:latest
+    image: ghcr.io/azorant/rhea:latest
     container_name: rhea
     restart: unless-stopped
     environment:
