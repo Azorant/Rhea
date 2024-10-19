@@ -249,4 +249,26 @@ public class ControlsModule(IAudioService lavalink) : BaseModule(lavalink)
                 break;
         }
     }
+
+    [SlashCommand("volume", "Set the players volume")]
+    public async Task VolumeCommand([MinValue(1), MaxValue(100)] int level)
+    {
+        var member = Context.Guild.GetUser(Context.User.Id);
+        if (member.VoiceState == null)
+        {
+            await RespondAsync("You must be in a voice channel to run this command.", ephemeral: true);
+            return;
+        }
+
+        var player = await GetPlayer();
+
+        if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
+        {
+            await RespondAsync("You must be in the same voice channel as me to run this command.", ephemeral: true);
+            return;
+        }
+
+        await player.SetVolumeAsync(level / 100f);
+        await RespondAsync($"\ud83d\udd0a Volume set to {level}%");
+    }
 }
