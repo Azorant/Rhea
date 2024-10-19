@@ -1,5 +1,6 @@
 using Discord;
 using Discord.Interactions;
+using Discord.Rest;
 using Discord.WebSocket;
 using Lavalink4NET.Extensions;
 using Lavalink4NET.InactivityTracking.Extensions;
@@ -52,6 +53,7 @@ public class Program
                 GatewayIntents = GatewayIntents.GuildVoiceStates | GatewayIntents.GuildMembers | GatewayIntents.Guilds
             })
             .AddSingleton<DiscordSocketClient>()
+            .AddSingleton<IRestClientProvider>(x => x.GetRequiredService<DiscordSocketClient>())
             .AddSingleton<InteractionService>()
             .AddSingleton<SimulatorRadio>()
             .AddSingleton<Statistics>()
