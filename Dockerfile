@@ -6,16 +6,16 @@ EXPOSE 3400
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 WORKDIR /src
-COPY ["Rhea/Rhea.csproj", "Rhea/"]
-RUN dotnet restore "Rhea/Rhea.csproj"
+COPY ["Rhea.Bot/Rhea.Bot.csproj", "Rhea.Bot/"]
+RUN dotnet restore "Rhea.Bot/Rhea.Bot.csproj"
 COPY . .
-WORKDIR "/src/Rhea"
-RUN dotnet build "Rhea.csproj" -c Release -o /app/build
+WORKDIR "/src/Rhea.Bot"
+RUN dotnet build "Rhea.Bot.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Rhea.csproj" -c Release -o /app/publish
+RUN dotnet publish "Rhea.Bot.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Rhea.dll"]
+ENTRYPOINT ["dotnet", "Rhea.Bot.dll"]
