@@ -1,7 +1,7 @@
 ﻿using Prometheus;
 using Serilog;
 
-namespace Rhea.Services;
+namespace Rhea.Bot.Services;
 
 public class Statistics
 {

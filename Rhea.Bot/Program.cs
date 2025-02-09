@@ -8,11 +8,13 @@ using Lavalink4NET.InactivityTracking.Trackers.Idle;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Rhea.Services;
+using Rhea.Bot.Services;
 using Serilog;
-using Monitor = Rhea.Services.Monitor;
+using Monitor = Rhea.Bot.Services.Monitor;
 
-namespace Rhea;
+namespace Rhea.Bot;
+
+using Monitor = Services.Monitor;
 
 public class Program
 {

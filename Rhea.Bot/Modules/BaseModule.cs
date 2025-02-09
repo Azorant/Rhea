@@ -4,10 +4,10 @@ using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Vote;
-using Rhea.Models;
-using Rhea.Services;
+using Rhea.Bot.Models;
+using Rhea.Bot.Services;
 
-namespace Rhea.Modules;
+namespace Rhea.Bot.Modules;
 
 public class BaseModule(IAudioService lavalink) : InteractionModuleBase<SocketInteractionContext>
 {

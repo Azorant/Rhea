@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 
-namespace Rhea.Services;
+namespace Rhea.Bot.Services;
 
 internal sealed class DiscordClientHost : IHostedService
 {

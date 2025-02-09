@@ -5,10 +5,10 @@ using Lavalink4NET.Players;
 using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Players.Vote;
 using Lavalink4NET.Rest.Entities.Tracks;
-using Rhea.Models;
-using Rhea.Services;
+using Rhea.Bot.Models;
+using Rhea.Bot.Services;
 
-namespace Rhea.Modules;
+namespace Rhea.Bot.Modules;
 
 [CommandContextType(InteractionContextType.Guild)]
 public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio, Statistics stats) : BaseModule(lavalink)

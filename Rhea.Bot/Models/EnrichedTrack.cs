@@ -2,7 +2,7 @@
 using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Tracks;
 
-namespace Rhea.Models;
+namespace Rhea.Bot.Models;
 
 public class EnrichedTrack(LavalinkTrack track, string requester) : ITrackQueueItem
 {

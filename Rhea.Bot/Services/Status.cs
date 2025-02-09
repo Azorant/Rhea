@@ -1,7 +1,7 @@
 ﻿using Discord.WebSocket;
 using Microsoft.Extensions.Hosting;
 
-namespace Rhea.Services;
+namespace Rhea.Bot.Services;
 
 public class Status(DiscordSocketClient client) : IHostedService, IDisposable
 {

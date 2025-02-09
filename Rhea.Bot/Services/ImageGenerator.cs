@@ -2,8 +2,8 @@
 using Discord;
 using Lavalink4NET.Rest.Entities.Tracks;
 using Lavalink4NET.Tracks;
-using Rhea.Models;
-using Rhea.Modules;
+using Rhea.Bot.Models;
+using Rhea.Bot.Modules;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing;
@@ -14,7 +14,7 @@ using SixLabors.ImageSharp.Processing;
 using Color = SixLabors.ImageSharp.Color;
 using Image = SixLabors.ImageSharp.Image;
 
-namespace Rhea.Services;
+namespace Rhea.Bot.Services;
 
 public static class ImageGenerator
 {

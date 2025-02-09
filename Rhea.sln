@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhea", "Rhea\Rhea.csproj", "{B5B2CA84-DD0A-4B7C-8657-29E6793CD3C6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rhea.Bot", "Rhea.Bot\Rhea.Bot.csproj", "{B5B2CA84-DD0A-4B7C-8657-29E6793CD3C6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

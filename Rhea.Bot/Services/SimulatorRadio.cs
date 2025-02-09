@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
-using Rhea.Models;
+using Rhea.Bot.Models;
 using Serilog;
 using Websocket.Client;
 
-namespace Rhea.Services;
+namespace Rhea.Bot.Services;
 
 public class SimulatorRadio
 {

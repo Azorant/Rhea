@@ -5,7 +5,7 @@ using Lavalink4NET.Players;
 using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Players.Vote;
 
-namespace Rhea.Modules;
+namespace Rhea.Bot.Modules;
 
 [CommandContextType(InteractionContextType.Guild)]
 public class ControlsModule(IAudioService lavalink) : BaseModule(lavalink)

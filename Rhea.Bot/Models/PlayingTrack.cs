@@ -1,4 +1,4 @@
-﻿namespace Rhea.Models;
+﻿namespace Rhea.Bot.Models;
 
 public class PlayingTrack(EnrichedTrack track, ulong channelID, TimeSpan position = default)
 {

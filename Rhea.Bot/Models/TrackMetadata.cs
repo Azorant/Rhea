@@ -1,4 +1,4 @@
-﻿namespace Rhea.Models;
+﻿namespace Rhea.Bot.Models;
 
 public class TrackMetadata
 {

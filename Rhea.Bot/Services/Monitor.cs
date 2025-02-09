@@ -3,7 +3,7 @@ using Lavalink4NET;
 using Lavalink4NET.Players.Queued;
 using Microsoft.Extensions.Hosting;
 
-namespace Rhea.Services;
+namespace Rhea.Bot.Services;
 
 public class Monitor(DiscordSocketClient client, IAudioService lavalink, Statistics stats) : IHostedService, IDisposable
 {
