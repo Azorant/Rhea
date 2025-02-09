@@ -20,7 +20,7 @@ public class ControlsModule(IAudioService lavalink) : BaseModule(lavalink)
             return;
         }
 
-        var player = await GetPlayer();
+        var player = await GetPlayer(Context.Channel);
 
         if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
@@ -54,7 +54,7 @@ public class ControlsModule(IAudioService lavalink) : BaseModule(lavalink)
             return;
         }
 
-        var player = await GetPlayer();
+        var player = await GetPlayer(Context.Channel);
 
         if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
@@ -88,7 +88,7 @@ public class ControlsModule(IAudioService lavalink) : BaseModule(lavalink)
             return;
         }
 
-        var player = await GetPlayer();
+        var player = await GetPlayer(Context.Channel);
 
         if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
@@ -116,7 +116,7 @@ public class ControlsModule(IAudioService lavalink) : BaseModule(lavalink)
             return;
         }
 
-        var player = await GetPlayer();
+        var player = await GetPlayer(Context.Channel);
 
         if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
@@ -155,7 +155,7 @@ public class ControlsModule(IAudioService lavalink) : BaseModule(lavalink)
             return;
         }
 
-        var player = await GetPlayer();
+        var player = await GetPlayer(Context.Channel);
 
         if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
@@ -177,7 +177,7 @@ public class ControlsModule(IAudioService lavalink) : BaseModule(lavalink)
             return;
         }
 
-        var player = await GetPlayer();
+        var player = await GetPlayer(Context.Channel);
 
         if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
@@ -227,7 +227,7 @@ public class ControlsModule(IAudioService lavalink) : BaseModule(lavalink)
             return;
         }
 
-        var player = await GetPlayer();
+        var player = await GetPlayer(Context.Channel);
 
         if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
@@ -260,7 +260,7 @@ public class ControlsModule(IAudioService lavalink) : BaseModule(lavalink)
             return;
         }
 
-        var player = await GetPlayer();
+        var player = await GetPlayer(Context.Channel);
 
         if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {

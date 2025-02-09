@@ -1,8 +1,12 @@
+using System.Collections;
+using System.Collections.Immutable;
 using Discord;
 using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
-using Lavalink4NET.Extensions;
+using Lavalink4NET.Cluster.Extensions;
+using Lavalink4NET.Cluster.Nodes;
+using Lavalink4NET.DiscordNet;
 using Lavalink4NET.InactivityTracking.Extensions;
 using Lavalink4NET.InactivityTracking.Trackers.Idle;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,7 +14,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Rhea.Bot.Services;
 using Serilog;
-using Monitor = Rhea.Bot.Services.Monitor;
 
 namespace Rhea.Bot;
 
@@ -62,12 +65,26 @@ public class Program
             .AddHostedService<DiscordClientHost>()
             .AddHostedService<Status>()
             .AddHostedService<Monitor>()
-            .AddLavalink()
+            .AddLavalinkCluster<DiscordClientWrapper>()
             .AddInactivityTracking()
-            .ConfigureLavalink(options =>
+            .ConfigureLavalinkCluster(options =>
             {
-                options.BaseAddress = new Uri($"http://{Environment.GetEnvironmentVariable("LAVALINK_HOST")}/");
-                options.Passphrase = Environment.GetEnvironmentVariable("LAVALINK_AUTH")!;
+                var nodes = new List<LavalinkClusterNodeOptions>();
+                foreach (DictionaryEntry v in Environment.GetEnvironmentVariables())
+                {
+                    if (((string)v.Key).StartsWith("LAVALINK_NODE"))
+                    {
+                        var parts = ((string)v.Value!).Split(',');
+                        nodes.Add(new LavalinkClusterNodeOptions
+                        {
+                            Label = parts[0],
+                            BaseAddress = new Uri(parts[1]),
+                            Passphrase = parts[2]
+                        });
+                    }
+                }
+
+                options.Nodes = nodes.ToImmutableArray();
             })
             .Configure<IdleInactivityTrackerOptions>(config => { config.Timeout = TimeSpan.FromHours(1); })
             .AddLogging(x => x.AddConsole().SetMinimumLevel(LogLevel.Warning));

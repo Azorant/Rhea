@@ -4,6 +4,7 @@ using Lavalink4NET;
 using Lavalink4NET.Players;
 using Lavalink4NET.Players.Queued;
 using Lavalink4NET.Players.Vote;
+using Lavalink4NET.Rest;
 using Lavalink4NET.Rest.Entities.Tracks;
 using Rhea.Bot.Models;
 using Rhea.Bot.Services;
@@ -23,7 +24,7 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio, 
             return;
         }
 
-        var player = await GetPlayer();
+        var player = await GetPlayer(Context.Channel);
 
         if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
@@ -35,7 +36,7 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio, 
 
         var searchResponse = await lavalink.Tracks.LoadTracksAsync(search, Uri.IsWellFormedUriString(search, UriKind.Absolute)
             ? TrackSearchMode.None
-            : TrackSearchMode.YouTube);
+            : TrackSearchMode.YouTube, new LavalinkApiResolutionScope(player.ApiClient));
 
         if (searchResponse.IsFailed || !searchResponse.HasMatches)
         {
@@ -138,7 +139,7 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio, 
             return;
         }
 
-        var player = await GetPlayer();
+        var player = await GetPlayer(Context.Channel);
 
         if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
@@ -148,7 +149,7 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio, 
 
         await DeferAsync();
 
-        var track = await lavalink.Tracks.LoadTrackAsync(simulatorRadio.url(), TrackSearchMode.None);
+        var track = await lavalink.Tracks.LoadTrackAsync(simulatorRadio.url(), TrackSearchMode.None, new LavalinkApiResolutionScope(player.ApiClient));
         if (track is null)
         {
             await ModifyOriginalResponseAsync(properties => properties.Content = "Unable to stream Simulator Radio");
@@ -182,7 +183,7 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio, 
             return;
         }
 
-        var player = await GetPlayer();
+        var player = await GetPlayer(Context.Channel);
 
         if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
@@ -268,7 +269,7 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio, 
     [SlashCommand("queue", "Show what's in queue")]
     public async Task QueueCommand()
     {
-        var player = await GetPlayer(PlayerChannelBehavior.None);
+        var player = await GetPlayer(Context.Channel, PlayerChannelBehavior.None);
         if (player == null || player.Queue.IsEmpty)
         {
             await RespondAsync("Nothing in queue");

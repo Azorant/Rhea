@@ -1,4 +1,5 @@
-﻿using Discord.Interactions;
+﻿using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Lavalink4NET;
 using Lavalink4NET.DiscordNet;
@@ -11,8 +12,7 @@ namespace Rhea.Bot.Modules;
 
 public class BaseModule(IAudioService lavalink) : InteractionModuleBase<SocketInteractionContext>
 {
-    protected async ValueTask<VoteLavalinkPlayer?> GetPlayer(
-        PlayerChannelBehavior joinBehavior = PlayerChannelBehavior.Join)
+    protected async ValueTask<VoteLavalinkPlayer?> GetPlayer(IMessageChannel textChannel, PlayerChannelBehavior joinBehavior = PlayerChannelBehavior.Join)
     {
         var member = Context.Guild.GetUser(Context.User.Id);
         var permissions = Context.Guild.CurrentUser.GetPermissions(member.VoiceChannel);
@@ -20,8 +20,9 @@ public class BaseModule(IAudioService lavalink) : InteractionModuleBase<SocketIn
         {
             throw new Exception($"Unable to connect to {member.VoiceChannel.Mention}");
         }
-        
-        var result = await lavalink.Players.RetrieveAsync(Context, PlayerFactory.Vote, new PlayerRetrieveOptions(joinBehavior));
+
+        var result = await lavalink.Players.RetrieveAsync<CustomPlayer, CustomPlayerOptions>(Context, CustomPlayer.CreatePlayerAsync,
+            new CustomPlayerOptions { TextChannel = textChannel }, new PlayerRetrieveOptions(joinBehavior));
         if (!result.IsSuccess && result.Status != PlayerRetrieveStatus.BotNotConnected)
             throw new Exception($"Unable to retrieve player: {result.Status}");
         return result.Player;

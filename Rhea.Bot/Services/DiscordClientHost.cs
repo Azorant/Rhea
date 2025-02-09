@@ -3,8 +3,15 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Lavalink4NET;
+using Lavalink4NET.Cluster;
+using Lavalink4NET.Cluster.Events;
+using Lavalink4NET.Cluster.Nodes;
 using Lavalink4NET.Events.Players;
+using Lavalink4NET.Players.Vote;
+using Lavalink4NET.Protocol.Models;
+using Lavalink4NET.Rest.Entities.Tracks;
 using Microsoft.Extensions.Hosting;
+using Rhea.Bot.Models;
 using Serilog;
 using Serilog.Events;
 
@@ -44,6 +51,8 @@ internal sealed class DiscordClientHost : IHostedService
         interactionService.Log += LogAsync;
         interactionService.SlashCommandExecuted += SlashCommandExecuted;
         lavalink.TrackStarted += TrackStarted;
+        lavalink.TrackException += TrackException;
+        ((ClusterAudioService)lavalink).NodeStatusChanged += NodeStatusChanged;
 
         await client
             .LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("TOKEN"))
@@ -64,6 +73,8 @@ internal sealed class DiscordClientHost : IHostedService
         interactionService.Log -= LogAsync;
         interactionService.SlashCommandExecuted -= SlashCommandExecuted;
         lavalink.TrackStarted -= TrackStarted;
+        lavalink.TrackException -= TrackException;
+        ((ClusterAudioService)lavalink).NodeStatusChanged -= NodeStatusChanged;
 
         await client
             .StopAsync()
@@ -214,6 +225,48 @@ internal sealed class DiscordClientHost : IHostedService
     {
         stats.TracksPlayed?.Inc();
         return Task.CompletedTask;
+    }
+
+    private async Task TrackException(object _, TrackExceptionEventArgs args)
+    {
+        var id = Guid.NewGuid();
+        await LogAsync(new LogMessage(LogSeverity.Warning, "Lavalink", $"Track exception {id} for guild {args.Player.GuildId}: {args.Exception.Message}"));
+        await ((CustomPlayer)args.Player).TextChannel.SendMessageAsync(embed: new EmbedBuilder()
+            .WithTitle("Track Exception")
+            .AddField("Track Information", $"[{args.Track.Title}]({args.Track.Uri})")
+            .AddField("Exception Encountered", args.Exception.Message, true)
+            .WithFooter(id.ToString())
+            .WithColor(Color.Gold).Build());
+
+        if (!ulong.TryParse(Environment.GetEnvironmentVariable("LOG_CHANNEL"), out var channelID)) return;
+        if (client.GetChannel(channelID) is not SocketTextChannel channel || channel.GetChannelType() != ChannelType.Text) return;
+        await channel.SendMessageAsync(embed: new EmbedBuilder()
+            .WithTitle($"{Enum.GetName(typeof(ExceptionSeverity), args.Exception.Severity)} Track Exception")
+            .WithColor(Color.Orange)
+            .WithCurrentTimestamp()
+            .AddField("Exception", args.Exception.Message, true)
+            .AddField("Node", args.Player.Label.Split("on").Last(), true)
+            .AddField("Guild", args.Player.GuildId, true)
+            .AddField("Track", $"[{args.Track.Title}]({args.Track.Uri})")
+            .WithFooter(id.ToString())
+            .Build());
+    }
+
+    private async Task NodeStatusChanged(object _, NodeStatusChangedEventArgs args)
+    {
+        await LogAsync(new LogMessage(LogSeverity.Warning, "Lavalink",
+            $"{args.Node.Label} node status changed from {Enum.GetName(typeof(LavalinkNodeStatus), args.PreviousStatus)} to {Enum.GetName(typeof(LavalinkNodeStatus), args.CurrentStatus)}"));
+
+        if (!ulong.TryParse(Environment.GetEnvironmentVariable("LOG_CHANNEL"), out var channelID)) return;
+        if (client.GetChannel(channelID) is not SocketTextChannel channel || channel.GetChannelType() != ChannelType.Text) return;
+        await channel.SendMessageAsync(embed: new EmbedBuilder()
+            .WithTitle($"Node Status Changed")
+            .WithColor(Color.Gold)
+            .WithCurrentTimestamp()
+            .AddField("Node", args.Node.Label, true)
+            .AddField("Previous", Enum.GetName(typeof(LavalinkNodeStatus), args.PreviousStatus), true)
+            .AddField("Current", Enum.GetName(typeof(LavalinkNodeStatus), args.CurrentStatus), true)
+            .Build());
     }
 
     public static string DisplayName(IUser user) => user.Discriminator == "0000"

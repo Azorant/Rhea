@@ -26,10 +26,10 @@ services:
     restart: unless-stopped
     environment:
       - DISCORD_INVITE=server invite
-      - LAVALINK_AUTH=youshallnotpass
-      - LAVALINK_HOST=lavalink:2333
+      - LAVALINK_NODE_1=Node1,http://lavalink:2333,youshallnotpass
       - TOKEN=bot token
       - GUILD_CHANNEL=channel ID for guild events
+      - LOG_CHANNEL=channel for logging node and track events
       - PROMETHEUS_ENABLED=true
       - PROMETHEUS_PREFIX=rhea
     ports:
