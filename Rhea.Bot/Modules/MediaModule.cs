@@ -24,15 +24,15 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio, 
             return;
         }
 
+        await DeferAsync();
+
         var player = await GetPlayer(Context.Channel);
 
         if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
-            await RespondAsync("You must be in the same voice channel as me to run this command.", ephemeral: true);
+            await ModifyOriginalResponseAsync(properties => properties.Content = "You must be in the same voice channel as me to run this command.");
             return;
         }
-
-        await DeferAsync();
 
         var searchResponse = await lavalink.Tracks.LoadTracksAsync(search, Uri.IsWellFormedUriString(search, UriKind.Absolute)
             ? TrackSearchMode.None
@@ -139,15 +139,15 @@ public class MediaModule(IAudioService lavalink, SimulatorRadio simulatorRadio, 
             return;
         }
 
+        await DeferAsync();
+
         var player = await GetPlayer(Context.Channel);
 
         if (player == null || player.VoiceChannelId != member.VoiceChannel.Id)
         {
-            await RespondAsync("You must be in the same voice channel as me to run this command.", ephemeral: true);
+            await ModifyOriginalResponseAsync(properties => properties.Content = "You must be in the same voice channel as me to run this command.");
             return;
         }
-
-        await DeferAsync();
 
         var track = await lavalink.Tracks.LoadTrackAsync(simulatorRadio.url(), TrackSearchMode.None, new LavalinkApiResolutionScope(player.ApiClient));
         if (track is null)
