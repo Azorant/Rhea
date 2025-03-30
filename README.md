@@ -30,8 +30,6 @@ services:
       - TOKEN=bot token
       - GUILD_CHANNEL=channel ID for guild events
       - LOG_CHANNEL=channel for logging node and track events
-      - PROMETHEUS_ENABLED=true
-      - PROMETHEUS_PREFIX=rhea
     ports:
       - 3400:3400
   lavalink:
