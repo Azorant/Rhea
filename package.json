@@ -1,0 +1,44 @@
+{
+  "name": "rhea",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "prepare": "husky",
+    "lint": "eslint src",
+    "format": "prettier --write src"
+  },
+  "keywords": [],
+  "author": "Azorant",
+  "license": "MIT",
+  "packageManager": "pnpm@10.29.3",
+  "dependencies": {
+    "@azorant/time": "^1.0.0",
+    "@napi-rs/canvas": "^0.1.96",
+    "acordia": "^2.0.1",
+    "displosion": "^1.0.1",
+    "dotenv": "^17.3.1",
+    "node-vibrant": "^4.0.4",
+    "pluralize": "^8.0.0",
+    "rainlink": "^1.2.9"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.3.3",
+    "@types/pluralize": "^0.0.33",
+    "eslint": "^10.0.2",
+    "globals": "^17.4.0",
+    "husky": "^9.1.7",
+    "jiti": "^2.6.1",
+    "lint-staged": "^16.3.2",
+    "prettier": "^3.8.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
+  }
+}
