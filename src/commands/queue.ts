@@ -12,7 +12,7 @@ export default class QueueCommand extends BaseCommand<Rhea> {
     const player = await createPlayer(context, interaction);
     if (!player) return;
 
-    if (!player.playing) return await interaction.followUp("I'm not playing anything.");
+    if (!player.queue.size) return await interaction.followUp('Nothing in queue.');
     const file = await generateQueue(player.queue);
 
     await interaction.followUp({
