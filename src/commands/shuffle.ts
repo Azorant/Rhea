@@ -11,9 +11,9 @@ export default class ShuffleCommand extends BaseCommand<Rhea> {
     const player = await createPlayer(context, interaction);
     if (!player) return;
 
-    if (!player.playing) return await interaction.reply("I'm not playing anything.");
+    if (!player.playing) return await interaction.followUp("I'm not playing anything.");
 
     player.queue.shuffle();
-    await interaction.reply('🔀 **Queue shuffled**');
+    await interaction.followUp('🔀 **Queue shuffled**');
   }
 }

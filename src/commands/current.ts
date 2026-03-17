@@ -16,8 +16,7 @@ export default class CurrentCommand extends BaseCommand<Rhea> {
     const track = player.queue.current!;
     track.position = player.position; // TODO: When library is updated this will no longer be needed
     const file = await generateSingle(track);
-    console.log(track);
-    return interaction.reply({
+    return interaction.followUp({
       components: [
         new ActionRowBuilder()
           .addComponents(

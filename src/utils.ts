@@ -4,16 +4,18 @@ import { type RainlinkPlayer } from 'rainlink';
 
 export async function createPlayer(context: Rhea, interaction: CommandInteraction) {
   if (!interaction.inGuild()) return;
+  await interaction.deferReply();
   const voiceChannelId = (await interaction.guild?.voiceStates.cache.get(interaction.user.id))?.channelId;
   if (!voiceChannelId) {
-    await interaction.reply('You must be in a voice channel to run this command.');
+    await interaction.followUp('You must be in a voice channel to run this command.');
     return;
   }
   const guildId = interaction.guild!.id;
   const existingPlayer = context.lavalink.players.get(guildId);
   if (existingPlayer?.voiceId) {
     if (existingPlayer.voiceId === voiceChannelId) return existingPlayer;
-    await interaction.reply(`You must be in the same voice channel as me to run this command.`);
+    await interaction.followUp(`You must be in the same voice channel as me to run this command.`);
+    return;
   }
 
   return context.lavalink.create({

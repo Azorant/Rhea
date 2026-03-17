@@ -15,10 +15,8 @@ export default class VolumeCommand extends BaseCommand<Rhea> {
     const player = await createPlayer(context, interaction);
     if (!player) return;
 
-    if (!player.playing) return await interaction.reply("I'm not playing anything.");
-    if (!player.queue.current?.isSeekable) return await interaction.reply("You can't seek on the current song.");
     const level = interaction.options.get('volume', true).value as number;
     player.setVolume(level);
-    await interaction.reply(`\ud83d\udd0a Volume set to ${level}%`);
+    await interaction.followUp(`\ud83d\udd0a Volume set to ${level}%`);
   }
 }

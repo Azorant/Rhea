@@ -16,10 +16,10 @@ export default class SeekCommand extends BaseCommand<Rhea> {
     const player = await createPlayer(context, interaction);
     if (!player) return;
 
-    if (!player.playing) return await interaction.reply("I'm not playing anything.");
-    if (!player.queue.current?.isSeekable) return await interaction.reply("You can't seek on the current song.");
+    if (!player.playing) return await interaction.followUp("I'm not playing anything.");
+    if (!player.queue.current?.isSeekable) return await interaction.followUp("You can't seek on the current song.");
     const timestamp = interaction.options.get('timestamp', true).value as string;
     await player.seek(fromTimestamp(timestamp));
-    await interaction.reply(`**Seeked to** \`${timestamp}\``);
+    await interaction.followUp(`**Seeked to** \`${timestamp}\``);
   }
 }

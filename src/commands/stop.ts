@@ -12,8 +12,8 @@ export default class StopCommand extends BaseCommand<Rhea> {
     if (!player) return;
 
     const permission = await hasPermission(interaction, player);
-    if (!permission) return await interaction.reply('You must either be alone in the channel, have a role named `DJ` or have the permission `Move Members` to stop the bot.');
+    if (!permission) return await interaction.followUp('You must either be alone in the channel, have a role named `DJ` or have the permission `Move Members` to stop the bot.');
     await player.stop(true);
-    await interaction.reply('🛑 **Stopped and cleared queue**');
+    await interaction.followUp('🛑 **Stopped and cleared queue**');
   }
 }

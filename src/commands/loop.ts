@@ -34,16 +34,14 @@ export default class LoopCommand extends BaseCommand<Rhea> {
   async executeCommand(context: Rhea, interaction: ChatInputCommandInteraction) {
     const player = await createPlayer(context, interaction);
     if (!player) return;
-
-    if (!player.playing) return await interaction.reply("I'm not playing anything.");
     const mode = interaction.options.get('mode', true).value as RainlinkLoopMode;
     player.setLoop(mode);
     switch (mode) {
       case RainlinkLoopMode.NONE:
-        await interaction.reply('🔂 **Loop disabled**');
+        await interaction.followUp('🔂 **Loop disabled**');
         break;
       case RainlinkLoopMode.SONG:
-        await interaction.reply('🔂 **Loop song**');
+        await interaction.followUp('🔂 **Loop song**');
         break;
       case RainlinkLoopMode.QUEUE:
         await interaction.reply('🔂 **Loop queue**');

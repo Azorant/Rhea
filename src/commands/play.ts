@@ -16,7 +16,6 @@ export default class PlayCommand extends BaseCommand<Rhea> {
   async executeCommand(context: Rhea, interaction: ChatInputCommandInteraction) {
     const player = await createPlayer(context, interaction);
     if (!player) return;
-    await interaction.deferReply();
 
     const query = interaction.options.get('search', true).value!.toString();
     const searchResult = await context.lavalink.search(query, {

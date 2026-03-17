@@ -13,11 +13,11 @@ export default class SkipCommand extends BaseCommand<Rhea> {
     if (!player) return;
 
     if (trackId && player.queue.current?.identifier !== trackId)
-      return await interaction.reply({
+      return await interaction.followUp({
         flags: MessageFlags.Ephemeral,
         content: 'This song is no longer playing',
       });
-    if (!player.playing) return await interaction.reply("I'm not playing anything.");
+    if (!player.playing) return await interaction.followUp("I'm not playing anything.");
 
     const permission = await hasPermission(interaction, player);
     if (!permission) {
@@ -31,14 +31,14 @@ export default class SkipCommand extends BaseCommand<Rhea> {
             votes.push(interaction.user.id);
             context.votes.set(channel.id, votes);
           }
-          return await interaction.reply(
+          return await interaction.followUp(
             `${trackId ? `${interaction.user} voted to skip\n` : ''}Need **${votesNeeded - votes.length}** more ${pluralize('vote', votesNeeded - votes.length)} to skip.`,
           );
         }
       }
     }
     await player.skip();
-    await interaction.reply(':fast_forward: **Skipped** :thumbsup:');
+    await interaction.followUp(':fast_forward: **Skipped** :thumbsup:');
   }
 
   async executeComponent(context: Rhea, interaction: ButtonInteraction) {
