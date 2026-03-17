@@ -7,6 +7,6 @@ export default class ReadyEvent extends BaseEvent<Rhea> {
   once = false;
   async execute(context: Rhea) {
     context.logger.success(`${context.client.user?.tag} ready`);
-    if (process.env.DEV_GUILD) await context.client.registerCommands(process.env.DEV_GUILD);
+    await context.client.registerCommands(process.env.DEV_GUILD);
   }
 }

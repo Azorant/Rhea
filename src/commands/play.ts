@@ -9,7 +9,7 @@ export default class PlayCommand extends BaseCommand<Rhea> {
   command = new SlashCommandBuilder()
     .setName('play')
     .setDescription('Play some music')
-    .addStringOption((option) => option.setName('query').setDescription('Search query or url').setRequired(true))
+    .addStringOption((option) => option.setName('search').setDescription('Search query or url').setRequired(true))
     .toJSON();
   commandPermissions: CommandPermissions = [];
   ownerOnly = false;
@@ -18,7 +18,7 @@ export default class PlayCommand extends BaseCommand<Rhea> {
     if (!player) return;
     await interaction.deferReply();
 
-    const query = interaction.options.get('query', true).value!.toString();
+    const query = interaction.options.get('search', true).value!.toString();
     const searchResult = await context.lavalink.search(query, {
       requester: interaction.user.tag,
     });
