@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, CommandInteraction } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
 import { BaseCommand, type CommandPermissions } from 'displosion';
 import type { Rhea } from '../index.js';
 import { createPlayer } from '../utils.js';
@@ -12,7 +12,7 @@ export default class SeekCommand extends BaseCommand<Rhea> {
     .toJSON();
   commandPermissions: CommandPermissions = [];
   ownerOnly = false;
-  async executeCommand(context: Rhea, interaction: CommandInteraction) {
+  async executeCommand(context: Rhea, interaction: ChatInputCommandInteraction) {
     const player = await createPlayer(context, interaction);
     if (!player) return;
 

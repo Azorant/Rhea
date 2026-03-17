@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, CommandInteraction, MediaGalleryBuilder, MessageFlags, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, MediaGalleryBuilder, MessageFlags, SlashCommandBuilder, TextDisplayBuilder } from 'discord.js';
 import type { Rhea } from '../index.js';
 import { BaseCommand, type CommandPermissions } from 'displosion';
 import { createPlayer } from '../utils.js';
@@ -13,7 +13,7 @@ export default class PlayCommand extends BaseCommand<Rhea> {
     .toJSON();
   commandPermissions: CommandPermissions = [];
   ownerOnly = false;
-  async executeCommand(context: Rhea, interaction: CommandInteraction) {
+  async executeCommand(context: Rhea, interaction: ChatInputCommandInteraction) {
     const player = await createPlayer(context, interaction);
     if (!player) return;
     await interaction.deferReply();
