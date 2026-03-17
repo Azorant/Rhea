@@ -41,8 +41,12 @@ export default class AboutCommand extends BaseCommand<Rhea> {
       ],
       components: [
         new ActionRowBuilder()
-          .addComponents(...generateInvites(), new ButtonBuilder().setURL('https://github.com/Azorant/Rhea').setStyle(ButtonStyle.Link).setLabel('GitHub'))
+          .addComponents(
+            new ButtonBuilder().setURL(`https://discord.gg/${process.env.DISCORD_INVITE}`).setStyle(ButtonStyle.Link).setLabel('Support Server'),
+            new ButtonBuilder().setURL('https://github.com/Azorant/Rhea').setStyle(ButtonStyle.Link).setLabel('GitHub'),
+          )
           .toJSON(),
+        new ActionRowBuilder().addComponents(...generateInvites()).toJSON(),
       ],
     });
   }
