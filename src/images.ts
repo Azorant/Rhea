@@ -9,7 +9,7 @@ import { toTimestamp } from '@azorant/time';
 GlobalFonts.registerFromPath(join(import.meta.dirname, 'resources', 'GoNotoKurrent-Regular.ttf'));
 GlobalFonts.registerFromPath(join(import.meta.dirname, 'resources', 'NotoSansSymbols-Regular.ttf'));
 GlobalFonts.registerFromPath(join(import.meta.dirname, 'resources', 'Roboto-Regular.ttf'));
-GlobalFonts.registerFromPath(join(import.meta.dirname, 'resources', 'Twemoji-Regular.ttf'));
+GlobalFonts.registerFromPath(join(import.meta.dirname, 'resources', 'Twemoji-17.0.2.ttf'));
 
 enum FontSize {
   Large = 40,
@@ -262,7 +262,7 @@ function drawText({
   lineHeight?: number;
 }) {
   ctx.save();
-  ctx.font = `${fontSize}px Roboto, Twemoji Mozilla, Noto Sans Symbols, Go Noto Kurrent-Regular`;
+  ctx.font = `${fontSize}px Roboto, Twemoji, Noto Sans Symbols, Go Noto Kurrent-Regular`;
   ctx.fillStyle = fillStyle;
   ctx.textAlign = align;
   ctx.textBaseline = baseline;
